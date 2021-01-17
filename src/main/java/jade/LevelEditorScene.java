@@ -3,6 +3,7 @@ package jade;
 import org.joml.Vector2f;
 import org.lwjgl.BufferUtils;
 import renderer.Shader;
+import renderer.Texture;
 import util.Time;
 
 import java.nio.FloatBuffer;
@@ -13,11 +14,11 @@ import static org.lwjgl.opengl.GL30.*;
 public class LevelEditorScene extends Scene {
 
     private float[] vertexArray = {
-            // position         // color
-            0.0f, 100.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, // Top left
-            100.0f, 100.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, // Top right
-            100.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, // Bottom right
-            0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f // Bottom left
+            // position         // color              //UV coordinates
+            0.0f, 100.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, // Top left
+            100.0f, 100.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, // Top right
+            100.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, // Bottom right
+            0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f // Bottom left
     };
 
     // IMPORTANT: Must be in counter-clockwise order.
@@ -42,11 +43,13 @@ public class LevelEditorScene extends Scene {
     }
 
     protected Camera camera;
+    protected Texture texture;
 
     @Override
     public void init() {
 
         this.camera = new Camera(new Vector2f(0.0f, 0.0f));
+        this.texture = new Texture("./assets/images/Natsuki.png");
 
         // ===========================================
         // Generate VAO, VBO, EBO and send them to GPU
@@ -71,11 +74,15 @@ public class LevelEditorScene extends Scene {
         // Add the vertex attribute pointers
         int positionSize = 3;
         int colorSize = 4;
-        int vertexSizeBytes = (positionSize + colorSize) * Float.BYTES;
+        int uvSize = 2;
+        int vertexSizeBytes = (positionSize + colorSize + uvSize) * Float.BYTES;
         glVertexAttribPointer(0, positionSize, GL_FLOAT, false, vertexSizeBytes, 0);
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(1, colorSize, GL_FLOAT, false, vertexSizeBytes, positionSize * Float.BYTES);
         glEnableVertexAttribArray(1);
+        glVertexAttribPointer(2, uvSize, GL_FLOAT, false, vertexSizeBytes, (positionSize + colorSize) * Float.BYTES);
+        glEnableVertexAttribArray(2);
+
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
@@ -89,10 +96,14 @@ public class LevelEditorScene extends Scene {
 
         // Bind shader program
         this.defaultShader.use();
+        this.texture.bind();
 
         this.defaultShader.uploadMatrix4f("uProjection", this.camera.getProjectionMatrix());
         this.defaultShader.uploadMatrix4f("uView", this.camera.getViewMatrix());
         this.defaultShader.uploadFloat("uTime", Time.getTime());
+
+        this.defaultShader.uploadTexture("TEX_SAMPLER", 0);
+        glActiveTexture(GL_TEXTURE0);
 
         // Bind the VAO that we are using
         glBindVertexArray(this.vaoID);
@@ -104,5 +115,6 @@ public class LevelEditorScene extends Scene {
         glBindVertexArray(0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         this.defaultShader.detach();
+        this.texture.unbind();
     }
 }

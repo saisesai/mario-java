@@ -153,13 +153,13 @@ public class Shader {
         glUniform4f(varLocation, vec.x, vec.y, vec.z, vec.w);
     }
 
-    public void uploadVec3f(String varName, Vector3f vec){
+    public void uploadVec3f(String varName, Vector3f vec) {
         int varLocation = glGetUniformLocation(this.shaderProgramID, varName);
         this.use();
         glUniform3f(varLocation, vec.x, vec.y, vec.z);
     }
 
-    public void uploadVec2f(String varName, Vector3f vec){
+    public void uploadVec2f(String varName, Vector3f vec) {
         int varLocation = glGetUniformLocation(this.shaderProgramID, varName);
         this.use();
         glUniform2f(varLocation, vec.x, vec.y);
@@ -171,5 +171,16 @@ public class Shader {
         glUniform1f(varLocation, var);
     }
 
+    public void uploadInt(String varName, int var) {
+        int varLocation = glGetUniformLocation(this.shaderProgramID, varName);
+        this.use();
+        glUniform1i(varLocation, var);
+    }
+
+    public void uploadTexture(String varName, int slot) {
+        int varLocation = glGetUniformLocation(this.shaderProgramID, varName);
+        this.use();
+        glUniform1i(varLocation, slot);
+    }
 
 }
